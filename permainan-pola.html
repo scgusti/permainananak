@@ -1,0 +1,139 @@
+<!-- naikkan level atau pilih semua bentuk -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Pola untuk PAUD</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #4c1d95;
+            font-family: Arial, sans-serif;
+        }
+        .game-container {
+            text-align: center;
+            padding: 2rem;
+        }
+        .title {
+            color: #fde047;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+        .car {
+            width: 100px;
+            height: 60px;
+            background: #fbbf24;
+            border-radius: 10px;
+            margin: 0 auto 3rem;
+            position: relative;
+        }
+        .wheel {
+            width: 30px;
+            height: 30px;
+            background: #1f2937;
+            border: 4px solid #9ca3af;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -15px;
+        }
+        .wheel.left { left: 5px; }
+        .wheel.right { right: 5px; }
+        .pattern-grid {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card.empty {
+            background: #e5e7eb;
+        }
+        .pattern-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1px);
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        .success-message {
+            color: #fde047;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 2rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .success-message.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">Mari Melengkapi Pola!</h1>
+        
+        <div class="car">
+            <div class="wheel left"></div>
+            <div class="wheel right"></div>
+        </div>
+
+        <div class="pattern-grid" id="patternGrid">
+            <div class="card">▲</div>
+            <div class="card">★</div>
+            <div class="card empty" onclick="togglePattern(0)">?</div>
+            <div class="card empty" onclick="togglePattern(1)">?</div>
+            <div class="card">★</div>
+            <div class="card">▲</div>
+            <div class="card empty" onclick="togglePattern(2)">?</div>
+            <div class="card">★</div>
+            <div class="card">▲</div>
+            <div class="card">▲</div>
+        </div>
+
+        <div class="pattern-options">
+            <div class="card">▲</div>
+            <div class="card">▲</div>
+            <div class="card">▲</div>
+            <div class="card">★</div>
+            <div class="card">★</div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            Hebat! Kamu berhasil! 🎉
+        </div>
+    </div>
+
+    <script>
+        const patterns = ['', '', ''];
+        const correctPattern = ['★', '★', '★'];
+        const emptyCards = document.querySelectorAll('.card.empty');
+        const successMessage = document.getElementById('successMessage');
+
+        function togglePattern(index) {
+            patterns[index] = patterns[index] === '▲' ? '★' : '▲';
+            emptyCards[index].textContent = patterns[index];
+            checkPattern();
+        }
+
+        function checkPattern() {
+            const isCorrect = patterns.every((pattern, index) => pattern === correctPattern[index]);
+            successMessage.classList.toggle('visible', isCorrect);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<!-- [Previous head and style sections remain the same] -->
+<head>
+    <link rel="icon" href="source/images/sc.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hujan Angka</title>
+    <style>
+        /* [Previous styles remain the same] */
+        body { 
+            text-align: center; 
+            font-family: Arial, sans-serif; 
+            background: url('source/images/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            align-items: center;
+            overflow: hidden;
+            /* position: fixed; */
+        }
+        canvas { 
+            background: rgba(0, 0, 0, 0.4);
+            display: block; 
+            margin: auto;
+            border-radius: 5pt;
+        }
+        h1 {
+            font-size: 36px;
+            color: #ffcc00;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        #question {
+            font-size: 24px;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 550px;
+            margin: 10px auto;
+            padding: 10px 20px;
+        }
+        #lives {
+            color: #ff4444;
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+        }
+        .hearts-container {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+        .heart-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 3px;
+        }
+        #score {
+            color: #00ff00;
+            font-size: 22px;
+        }
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hujan Angka</h1>
+    <p id="question">Soal: ?</p>
+    <div class="status-bar">
+        <div id="lives">
+            <div class="hearts-container"></div>
+        </div>
+        <p id="score">Skor: 0</p>
+    </div>
+
+    <canvas id="gameCanvas" width="600" height="700"></canvas>
+
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <p>Skor Akhir: <span id="finalScore">0</span></p>
+            <button onclick="resetGame()">Main Lagi</button>
+        </div>
+    </div>
+    
+    <script>
+        window.addEventListener('load', function() {
+            const canvas = document.getElementById('gameCanvas');
+            const statusBar = document.querySelector('.status-bar');
+            statusBar.style.width = `${canvas.width}px`;
+            updateHearts(5);
+        });
+
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const gameOverModal = document.getElementById("gameOverModal");
+        
+        let player = { 
+            x: 270, 
+            y: 650, 
+            width: 60, 
+            height: 40,
+            velocity: 0,
+            acceleration: 0.3,
+            maxSpeed: 5,
+            friction: 0.85
+        };
+
+        let playerImg = new Image();
+        playerImg.src = 'source/images/keranjang.png';
+        let numbers = [];
+        let question = generateQuestion();
+        let score = 0;
+        let speed = 0.4;
+        let maxNumbers = 100;
+        let spawnDelay = 0;
+        let lives = 5;
+        let keys = {};
+        let gameActive = true;
+
+        function updateHearts(count) {
+            const container = document.querySelector('.hearts-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const heart = document.createElement('img');
+                heart.className = 'heart-icon';
+                heart.src = i < count ? 'source/images/heart.png' : 'source/images/broken-heart.png';
+                heart.alt = i < count ? 'Full Heart' : 'Empty Heart';
+                container.appendChild(heart);
+            }
+        }
+        
+        function generateQuestion() {
+            let num1 = Math.floor(Math.random() * 10);
+            let num2 = Math.floor(Math.random() * 10);
+            document.getElementById("question").innerText = `Soal: ${num1} + ${num2} = ?`;
+            return { num1, num2, answer: num1 + num2 };
+        }
+        
+        function spawnNumber() {
+            if (!gameActive) return;
+            if (numbers.length < maxNumbers && spawnDelay === 0) {
+                let value;
+                if (Math.random() < 0.3) {
+                    value = question.answer;
+                } else {
+                    value = Math.floor(Math.random() * 19);
+                }
+                numbers.push({ 
+                    x: Math.random() * (canvas.width - 20),
+                    y: 0, 
+                    value 
+                });
+                spawnDelay = 100 / speed;
+            }
+        }
+        
+        function drawPlayer() {
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+        }
+        
+        function drawNumbers() {
+            ctx.fillStyle = "yellow";
+            ctx.font = "20px Arial";
+            numbers.forEach(n => {
+                ctx.fillText(n.value, n.x, n.y);
+                n.y += speed;
+            });
+        }
+        
+        function updatePlayerPosition() {
+            // Terapkan akselerasi berdasarkan input
+            if (keys["ArrowLeft"]) {
+                player.velocity -= player.acceleration;
+            }
+            if (keys["ArrowRight"]) {
+                player.velocity += player.acceleration;
+            }
+
+            // Batasi kecepatan maksimum
+            player.velocity = Math.max(Math.min(player.velocity, player.maxSpeed), -player.maxSpeed);
+
+            // Terapkan gesekan ketika tidak ada input
+            if (!keys["ArrowLeft"] && !keys["ArrowRight"]) {
+                player.velocity *= player.friction;
+            }
+
+            // Update posisi
+            player.x += player.velocity;
+
+            // Batasi posisi dalam canvas
+            player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
+
+            // Reset velocity yang sangat kecil untuk menghindari gerakan mikroskopik
+            if (Math.abs(player.velocity) < 0.01) {
+                player.velocity = 0;
+            }
+        }
+        
+        function checkCollision() {
+            numbers = numbers.filter(n => {
+                if (n.y > player.y && n.x > player.x && n.x < player.x + player.width) {
+                    if (n.value === question.answer) {
+                        score += 2;
+                        if (score % 20 === 0) speed += 0.1;
+                        question = generateQuestion();
+                    } else {
+                        lives -= 1;
+                        updateHearts(lives);
+                        if (lives <= 0) {
+                            gameOver();
+                        }
+                    }
+                    document.getElementById("score").innerText = "Skor: " + score;
+                    return false;
+                }
+                return n.y < canvas.height;
+            });
+        }
+        
+        function gameOver() {
+            gameActive = false;
+            document.getElementById("finalScore").textContent = score;
+            gameOverModal.style.display = "flex";
+        }
+        
+        function resetGame() {
+            score = 0;
+            speed = 0.4;
+            lives = 5;
+            numbers = [];
+            gameActive = true;
+            player.x = 270;
+            player.velocity = 0;
+            document.getElementById("score").innerText = "Skor: 0";
+            updateHearts(lives);
+            question = generateQuestion();
+            gameOverModal.style.display = "none";
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function gameLoop() {
+            if (!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updatePlayerPosition();
+            drawPlayer();
+            drawNumbers();
+            checkCollision();
+            if (spawnDelay > 0) spawnDelay--;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        document.addEventListener("keydown", (e) => {
+            keys[e.key] = true;
+        });
+        
+        document.addEventListener("keyup", (e) => {
+            keys[e.key] = false;
+        });
+        
+        setInterval(spawnNumber, 500);
+        gameLoop();
+    </script>
+</body>
+</html>

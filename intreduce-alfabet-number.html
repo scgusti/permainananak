@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Learn Alphabet & Numbers</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f9ff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tab:hover {
+            background-color: #45a049;
+        }
+
+        .tab.active {
+            background-color: #357a38;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .letter, .number {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            background-color: #ff9800;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            margin: 5px;
+            user-select: none;
+        }
+
+        .letter:hover, .number:hover {
+            transform: scale(1.1);
+            background-color: #f57c00;
+        }
+
+        .letter:active, .number:active {
+            transform: scale(0.95);
+        }
+
+        #alphabetContent, #numbersContent {
+            display: none;
+        }
+
+        .show {
+            display: grid !important;
+        }
+
+        h1 {
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-size: 36px;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Learn Alphabet & Numbers</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showContent('alphabet')">Alphabet</button>
+            <button class="tab" onclick="showContent('numbers')">Numbers</button>
+        </div>
+
+        <div id="alphabetContent" class="content show"></div>
+        <div id="numbersContent" class="content"></div>
+    </div>
+
+    <script>
+        // Create audio context
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Function to generate speech
+        async function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Function to create alphabet buttons
+        function createAlphabet() {
+            const alphabetContent = document.getElementById('alphabetContent');
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const div = document.createElement('div');
+                div.className = 'letter';
+                div.textContent = letter;
+                div.onclick = () => speak(letter);
+                alphabetContent.appendChild(div);
+            }
+        }
+
+        // Function to create number buttons
+        function createNumbers() {
+            const numbersContent = document.getElementById('numbersContent');
+            for (let i = 0; i <= 20; i++) {
+                const div = document.createElement('div');
+                div.className = 'number';
+                div.textContent = i;
+                div.onclick = () => speak(i.toString());
+                numbersContent.appendChild(div);
+            }
+        }
+
+        // Function to switch between tabs
+        function showContent(contentType) {
+            const alphabet = document.getElementById('alphabetContent');
+            const numbers = document.getElementById('numbersContent');
+            const tabs = document.querySelectorAll('.tab');
+
+            if (contentType === 'alphabet') {
+                alphabet.classList.add('show');
+                numbers.classList.remove('show');
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                alphabet.classList.remove('show');
+                numbers.classList.add('show');
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+            }
+        }
+
+        // Initialize the game
+        createAlphabet();
+        createNumbers();
+    </script>
+</body>
+</html>

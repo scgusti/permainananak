@@ -1,0 +1,86 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+    <style>
+        .draggable {
+            cursor: grab;
+        }
+        .droppable {
+            border: 2px dashed #ccc;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">Word Game</h1>
+        <div id="game-board" class="flex flex-wrap justify-center mb-4">
+            <!-- Letters to drag -->
+            <div class="draggable bg-blue-500 text-white p-2 m-1 rounded" draggable="true" data-letter="W">W</div>
+            <div class="draggable bg-blue-500 text-white p-2 m-1 rounded" draggable="true" data-letter="O">O</div>
+            <div class="draggable bg-blue-500 text-white p-2 m-1 rounded" draggable="true" data-letter="R">R</div>
+            <div class="draggable bg-blue-500 text-white p-2 m-1 rounded" draggable="true" data-letter="D">D</div>
+        </div>
+        <div id="drop-zone" class="flex justify-center mb-4">
+            <!-- Drop zones for letters -->
+            <div class="droppable bg-gray-200 p-2 m-1 rounded w-12 h-12 flex items-center justify-center" data-index="0"></div>
+            <div class="droppable bg-gray-200 p-2 m-1 rounded w-12 h-12 flex items-center justify-center" data-index="1"></div>
+            <div class="droppable bg-gray-200 p-2 m-1 rounded w-12 h-12 flex items-center justify-center" data-index="2"></div>
+            <div class="droppable bg-gray-200 p-2 m-1 rounded w-12 h-12 flex items-center justify-center" data-index="3"></div>
+        </div>
+        <div class="text-center">
+            <button id="check-word" class="bg-green-500 text-white px-4 py-2 rounded">Check Word</button>
+        </div>
+        <div id="score" class="text-center mt-4 text-xl font-bold">Score: 0</div>
+    </div>
+
+    <script>
+        let score = 0;
+        const correctWord = "WORD";
+        const draggables = document.querySelectorAll('.draggable');
+        const droppables = document.querySelectorAll('.droppable');
+        const checkWordButton = document.getElementById('check-word');
+        const scoreDisplay = document.getElementById('score');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('dragging');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+            });
+        });
+
+        droppables.forEach(droppable => {
+            droppable.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const dragging = document.querySelector('.dragging');
+                droppable.appendChild(dragging);
+            });
+        });
+
+        checkWordButton.addEventListener('click', () => {
+            let formedWord = '';
+            droppables.forEach(droppable => {
+                const letter = droppable.querySelector('.draggable');
+                if (letter) {
+                    formedWord += letter.getAttribute('data-letter');
+                }
+            });
+
+            if (formedWord === correctWord) {
+                score += 10;
+                alert('Correct! You earned 10 points.');
+            } else {
+                alert('Incorrect! Try again.');
+            }
+
+            scoreDisplay.textContent = `Score: ${score}`;
+        });
+    </script>
+</body>
+</html>
